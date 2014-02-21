@@ -29,7 +29,7 @@ class Serial
 
     public:
         //Initialize Serial communication with the given COM port
-        Serial(LPCSTR portName);
+        Serial(LPCWSTR portName);
 
         //Close the connection
         //NOTA: for some reason you can't connect again before exiting

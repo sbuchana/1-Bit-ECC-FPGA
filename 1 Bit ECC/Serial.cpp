@@ -13,7 +13,7 @@
 
 #include "Serial.h"
 
-Serial::Serial(LPCSTR portName)
+Serial::Serial(LPCWSTR portName)
 {
     //We're not yet connected
     this->connected = false;

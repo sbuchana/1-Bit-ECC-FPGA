@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <tchar.h>
+#include "Serial.h"
 
 using namespace std;
 
@@ -108,8 +110,36 @@ char errorGen(char x){
 }
 
 int main(void){
+
+	// Declare variables needed for serial connection
+	LPCWSTR com = _T("COM4");
+
 	srand(time(NULL));
 	char code = 0x00;
+
+	char* input = new char(0x0);
+	char* output = new char(0x0);
+	char* sendbit = new char('1');
+	char* readbit = new char[50];
+
+	// Instantiate serial connection
+	Serial fpga(com);
+
+	// Wait for it to connect
+	while (!fpga.IsConnected());
+	printf("\nConnected to DE2\n");
+
+	while (1){
+		
+		getchar();
+		printf("\nSent to FPGA: %#4x", *input);
+		fpga.WriteData(input, 1);
+		*input = *input + 1;
+		fpga.ReadData(output, 1);
+		printf("\nRead from FPGA: %#4x", *output);
+	}
+
+	
 
 	for (int i = 0; i < 15; i++){
 		code = rand() % 15;
