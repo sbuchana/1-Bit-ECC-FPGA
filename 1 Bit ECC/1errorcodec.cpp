@@ -115,41 +115,57 @@ int main(void){
 	LPCWSTR com = _T("COM4");
 
 	srand(time(NULL));
+	int correctCount = 0;
 	char code = 0x00;
-
-	char* input = new char(0x0);
-	char* output = new char(0x0);
-	char* sendbit = new char('1');
-	char* readbit = new char[50];
+	char input;
+	char* output = new char(0x00);
+	char sendout;
+	char nopoint = 0x00;
 
 	// Instantiate serial connection
 	Serial fpga(com);
 
 	// Wait for it to connect
 	while (!fpga.IsConnected());
+
+	printf("\nSending with 0 bit errors.");
+
+	for (int i = 0; i < 1000; i++){
+		input = rand() % 15;
+		input = encode(input);
+		fpga.WriteData(&input, 1);
+		while (fpga.ReadData(output, 1) == -1);
+		//printf("\nSent: %#4x  Received: %#4x  Last: %#4x", input, *output);
+		if (input == *output) {
+			correctCount += 1;
+		}
+		Sleep(10);
+	}
+
+	printf("\nNumber of correct codewords: %i", correctCount);
+
 	printf("\nConnected to DE2\n");
+	printf("\nSending with 1 bit error.");
+	correctCount = 0;
+	fpga.ReadData(output, 1);	// Clear any remaining words in the buffer
 
-	while (1){
-		
-		getchar();
-		printf("\nSent to FPGA: %#4x", *input);
-		fpga.WriteData(input, 1);
-		*input = *input + 1;
-		fpga.ReadData(output, 1);
-		printf("\nRead from FPGA: %#4x", *output);
+	for (int i = 0; i < 1000; i++){
+		input = rand() % 15;
+		input = encode(input);
+		sendout = errorGen(input);
+		fpga.WriteData(&sendout , 1);
+		while(fpga.ReadData(output, 1) == -1 );
+		//printf("\nSent: %#4x  Received: %#4x  Last: %#4x"  , input, *output);
+		if (input == *output) {
+			correctCount += 1;
+		}
+		Sleep(10);
 	}
 
-	
+	printf("\nNumber of correct codewords: %i", correctCount);
 
-	for (int i = 0; i < 15; i++){
-		code = rand() % 15;
-		printf("\nsent: %#4x   ", code);
-		code = encode(code);
-		printf("Codeword: %#4x   ", code);
-		code = errorGen(code);
-		printf("error: %#4x   ", code);
-		printf("returned: %#4x", decode(code));
-	}
+	// cleanup
+	delete output;
 
 	getchar();
 }
