@@ -44,30 +44,29 @@ vector<char> encode2bit(vector<char> message) {
 	// declare all variables
 	vector<char> codeWord;
 	vector<char> parity(18, 0);
-	
-	// Generate the parity bit according to formula
+
 	for (int i = 0; i < 492; i++){
+
 		parity[17] = parity[16];
 		parity[16] = parity[15];
-		parity[15] = parity[14] ^ message[i];
+		parity[15] = parity[14] & message[i];
 		parity[14] = parity[13];
 		parity[13] = parity[12];
-		parity[12] = parity[11] ^ message[i];
+		parity[12] = parity[11] & message[i];
 		parity[11] = parity[10];
-		parity[10] = parity[9] ^ message[i];
+		parity[10] = parity[9] & message[i];
 		parity[9] = parity[8];
-		parity[8] = parity[7] ^ message[i];
-		parity[7] = parity[6] ^ message[i];
-		parity[6] = parity[5] ^ message[i];
+		parity[8] = parity[7] & message[i];
+		parity[7] = parity[6] & message[i];
+		parity[6] = parity[5] & message[i];
 		parity[5] = parity[4];
 		parity[4] = parity[3];
-		parity[3] = parity[2] ^ message[i];
+		parity[3] = parity[2] & message[i];
 		parity[2] = parity[1];
-		parity[1] = parity[0] ^ message[i];
+		parity[1] = parity[0] & message[i];
 		parity[0] = message[i];
 	}
 
-	// Add parity bit on the end of the message and return the finished codeword
 	codeWord.reserve(message.size() + parity.size());
 	codeWord.insert(codeWord.end(), message.begin(), message.end());
 	codeWord.insert(codeWord.end(), parity.begin(), parity.end());
@@ -157,53 +156,57 @@ int main(void){
 	int correctCount = 0;
 	char code = 0x00;
 	vector<char> input(493,0);
-	vector<char> encoded;
 	unsigned char sendout;
 	unsigned char testout = 0x00;
 	char nopoint = 0x00;
-	int counter = 0;		// Used to cut vector into characters
 
-	// Create a vector of random bits
 	for (int i = 0; i < input.size(); i++){
 		input[i] = rand() % 2;
-		printf("%x", input[i]);
+		//printf("%#x", input[i]);
+		if (input[i] == 1)
+			printf("%i", 1);
+		else
+			printf("%i", 0);
 	}
+
 	printf("\n\n");
-	// Encode the message
-	encoded = encode2bit(input);	
+	int counter = 0;
 	
-	// Show what was final product of encoding is
-	for (int i = 0; i < encoded.size(); i++){
-		printf("%x", encoded[i]);
-	}
-
-	printf("\n\nSize of encoded:%i\n", encoded.size());
-
-	// Small function to display in hex what will be sent.
-	for (int i = 0; i < encoded.size(); i++){
-		
-		// If a full character has been built, print it off / send it out and reset the counters
+	for (int i = 0; i < 63; i++){
 		if (counter == 8){
 			counter = 0;
-			printf("%x ", testout);
+			printf("\n%#4x", testout);
 			testout = 0x00;
 		}
-		// Build the character to be send
-		testout = (testout | (encoded[i] << counter));
-
-		//printf("\ninput:%i  inputshift:%i  testout:%x   i:%i",input[i],input[i] << counter, testout,i);
+		testout = (testout | (input[i] << counter));
+		printf("\ninput:%i  inputshift:%i  testout:%x   i:%i",input[i],input[i] << counter, testout,i);
 		counter++;
 
-	}
-	printf("%x\n\n", testout);
 
-	
+		
+	}
+	printf("\n%#4x", testout);
 	// Instantiate serial connection
 	//Serial fpga(com);
 
 	// Wait for it to connect
 	//while (!fpga.IsConnected());
 
-	printf("done");
+	printf("\nSending with 0 bit errors.");
+
+	//for (int i = 0; i < 1000; i++){
+	//	input = rand() % 15;
+	//	input = encode(input);
+	//	fpga.WriteData(&input, 1);
+	//	while (fpga.ReadData(output, 1) == -1);
+	//	//printf("\nSent: %#4x  Received: %#4x  Last: %#4x", input, *output);
+	//	if (input == *output) {
+	//		correctCount += 1;
+	//	}
+	//	Sleep(10);
+	//}
+
+
+
 	getchar();
 }
